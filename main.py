@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# Izak Halseide
-# Bugs: can rotate blocks through other blocks; can rotate blocks off the screen edge
+#TODO: fix the row animation
 
 import pygame
 import sys
@@ -9,9 +8,9 @@ import time
 from copy import deepcopy
 
 BOX_SIZE = 20 # how big each square is
-SCREEN_WIDTH, SCREEN_HEIGHT = 450, 500
-X_MARGIN, Y_MARGIN = 50, 25 # padding between game board and SCREEN edge
-BOARD_WIDTH, BOARD_HEIGHT = 10, 20 # rows and columns of game board
+SCREEN_WIDTH, SCREEN_HEIGHT = (350, 530)
+X_MARGIN, Y_MARGIN = (15, 115) # padding between game board and SCREEN edge
+BOARD_WIDTH, BOARD_HEIGHT = (10, 20) # rows and columns of game board
 BG_COLOR = (120, 120, 120)
 BOARD_COLOR = (0, 0, 0)
 BORDER_COLOR = (255, 255, 255)
@@ -152,27 +151,6 @@ def check_for_keypress():
 	return None
 
 
-def show_text_screen(bg_color, title, title_color=TEXT_COLOR, subtitle=None, subtitle_color=TEXT_COLOR):
-	SCREEN.fill(BG_COLOR)
-	
-	surf = BIG_FONT.render(title, True, title_color)
-	rect = surf.get_rect()
-	rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/3)
-	SCREEN.blit(surf, rect)
-
-	# only draw subtitle if reqs. are met
-	if all([subtitle, subtitle_color]):
-		surf = NORMAL_FONT.render(subtitle, True, subtitle_color)
-		rect = surf.get_rect()
-		rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/3+20)
-		SCREEN.blit(surf, rect)
-
-	pygame.display.update()
-	FPS_CLOCK.tick(1)
-	pygame.event.clear()
-	wait_for_keypress()
-
-
 # draw the blocks breaking
 def animate_row(board, y):
 	for x in range(BOARD_WIDTH):
@@ -183,6 +161,11 @@ def animate_row(board, y):
 	draw_board(board)
 			
 			
+def draw_background():
+	SCREEN.fill(BG_COLOR)
+	SCREEN.blit(IMAGES['title'], (0,0))
+	
+	
 # run one round of brick game
 def run_game():
 	board = get_empty_board()
@@ -250,7 +233,6 @@ def run_game():
 							break
 						y = i
 					falling_piece.y += y
-					SOUNDS['rotate'].play()
 			elif event.type == pygame.KEYUP:
 				k = event.key
 				if k == pygame.K_LEFT:
@@ -305,7 +287,7 @@ def run_game():
 					return (level, score)
 
 		# display:
-		SCREEN.fill(BG_COLOR)
+		draw_background()
 		draw_board(board)
 		draw_next_piece(next_piece)
 		if falling_piece is not None: # there might not be a current falling piece
@@ -314,7 +296,11 @@ def run_game():
 		pygame.display.flip()
 		FPS_CLOCK.tick(FPS)
 		
-		
+	
+def show_game_over():
+	pass
+	
+	
 def to_pixel_coords(box_x, box_y):
 	x = X_MARGIN + (box_x * BOX_SIZE)
 	y = Y_MARGIN + (box_y * BOX_SIZE)
@@ -359,6 +345,7 @@ def add_to_board(board, piece):
 		for y in range(piece.height):
 			if piece.get_at(x, y) is not None:
 				board[y + piece.y][x + piece.x] = piece.color
+	SOUNDS['rotate'].play()
 
 				
 def calculate_lvl_and_freq(score):
@@ -405,29 +392,34 @@ def is_valid_position(board, piece, adj_x=0, adj_y=0):
 
 	
 def draw_status(score, level):
-	# score
 	score_surf = NORMAL_FONT.render("Score: %s"%score, True, TEXT_COLOR)
 	score_rect = score_surf.get_rect()
-	score_rect.topleft = (SCREEN_WIDTH - 150, 20)
+	score_rect.bottomleft = (X_MARGIN, Y_MARGIN-5)
 	SCREEN.blit(score_surf, score_rect)
-	# level:
+
 	level_surf = NORMAL_FONT.render("Level: %s"%level, True, TEXT_COLOR)
 	level_rect = level_surf.get_rect()
-	level_rect.topleft = (SCREEN_WIDTH - 150, 50)
+	level_rect.bottomleft = (2*X_MARGIN+BOX_SIZE*BOARD_WIDTH, Y_MARGIN-5)
 	SCREEN.blit(level_surf, level_rect)
 
 	
 def draw_next_piece(next_piece):
+	next_area = pygame.Rect(2*X_MARGIN+BOX_SIZE*BOARD_WIDTH, Y_MARGIN+25, 100, 100)
+	pygame.draw.rect(SCREEN, BORDER_COLOR, next_area, 5)
+	pygame.draw.rect(SCREEN, BOARD_COLOR, next_area)
+	center_x = BOX_SIZE * next_piece.width / 2
+	center_y = BOX_SIZE * next_piece.height / 2
+	next_piece.draw(pixel_x=next_area.center[0]-center_x, pixel_y=next_area.center[1]-center_y)
+	
 	surf = NORMAL_FONT.render("Next:", True, TEXT_COLOR)
 	rect = surf.get_rect()
-	rect.topleft = (SCREEN_WIDTH - 120, 80)
+	rect.topleft = (next_area.topleft[0], next_area.topleft[1]-25)
 	SCREEN.blit(surf, rect)
-	next_piece.draw(pixel_x=SCREEN_WIDTH-120, pixel_y=100)
-		
+	
 		
 def show_main_screen():
 	SCREEN.fill(BG_COLOR)
-	surf = BIG_FONT.render("It's Raining Bricks!", True, TEXT_COLOR)
+	surf = BIG_FONT.render("Raining Bricks!", True, TEXT_COLOR)
 	surf_rect = surf.get_rect()
 	surf_rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/3)
 	SCREEN.blit(surf, surf_rect)
@@ -443,7 +435,7 @@ def show_main_screen():
 		surf_rect.topleft = (SCREEN_WIDTH/8, SCREEN_HEIGHT/3 + i*22 + 60)
 		SCREEN.blit(surf, surf_rect)
 		
-	for i, text in enumerate(['Arrow keys except up', 'Up arrow key', 'Space key']):
+	for i, text in enumerate(['Arrow keys', 'Up arrow key', 'Space key']):
 		surf = NORMAL_FONT.render(text, True, BOARD_COLOR)
 		surf_rect = surf.get_rect()
 		surf_rect.topleft = (SCREEN_WIDTH/2, SCREEN_HEIGHT/3 + i*22 + 60)
@@ -462,7 +454,7 @@ def main():
 	global BIG_FONT, NORMAL_FONT, TINY_FONT, SCREEN, IMAGES, FPS_CLOCK, SOUNDS
 	pygame.init()
 	SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-	pygame.display.set_caption("It's Raining Bricks!")
+	pygame.display.set_caption("Raining Bricks!")
 	FPS_CLOCK = pygame.time.Clock()
 	
 	# load necessary details
@@ -470,9 +462,10 @@ def main():
 	BIG_FONT = pygame.font.Font('freesansbold.ttf', 25)
 	TINY_FONT = pygame.font.SysFont('courier', 15)
 	# load images from color list
-	IMAGES = {x: pygame.image.load('assets/sights/%s brick.png'%x) for x in COLORS}
+	IMAGES = {x: pygame.image.load('assets/%s brick.png'%x) for x in COLORS}
+	IMAGES['title'] = pygame.image.load('assets/title.png')
 	# load sounds in a similar way
-	SOUNDS = {x: pygame.mixer.Sound('assets/sounds/%s.ogg'%x) for x in SOUNDS}
+	SOUNDS = {x: pygame.mixer.Sound('assets/%s.ogg'%x) for x in SOUNDS}
 	for s in SOUNDS.values():
 		s.set_volume(.25)
 
@@ -480,12 +473,12 @@ def main():
 	SOUNDS['select'].play()
 	while True:
 		# play music until g.o.
-		pygame.mixer.music.load('assets/sounds/song.mid')
+		pygame.mixer.music.load('assets/song.mid')
 		pygame.mixer.music.play(-1)
 		level, score = run_game() # get level and score for game over screen
 		pygame.mixer.music.stop()
 		SOUNDS['over'].play()
-		show_text_screen(BG_COLOR, 'Game Over! Level: %s, Score: %s'%(level, score), TEXT_COLOR, 'Press any key to continue')
+		show_game_over()
 
 
 if __name__ == '__main__':
