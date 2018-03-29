@@ -149,16 +149,6 @@ def check_for_keypress():
 			continue
 		return event.key
 	return None
-
-
-# draw the blocks breaking
-def animate_row(board, y):
-	for x in range(BOARD_WIDTH):
-		draw_box(x, y, None, draw_blank=True)
-		pygame.display.flip()
-		SOUNDS['break'].play()
-		FPS_CLOCK.tick(LINE_FPS)
-	draw_board(board)
 			
 			
 def draw_background():
@@ -263,8 +253,8 @@ def run_game():
 			if not is_valid_position(board, falling_piece, adj_y=1):
 				add_to_board(board, falling_piece)
 				# use list from removing lines to change score and animate
-				removed_lines = remove_complete_lines(board)
-				score += len(removed_lines)
+				num_lines = remove_complete_lines(board)
+				score += num_lines
 				for y in removed_lines:
 					animate_row(board, y)
 				level, fall_freq = calculate_lvl_and_freq(score)
@@ -298,7 +288,10 @@ def run_game():
 		
 	
 def show_game_over():
-	pass
+	surf = BIG_FONT.render('GAME OVER', true, TEXT_COLOR)
+	rect = surf.get_rect()
+	rect.center = (SCREEN_WIDTH/2, (SCREEN_HEIGHT+Y_MARGIN)/2)
+	SCREEN.blit(surf, rect)
 	
 	
 def to_pixel_coords(box_x, box_y):
@@ -362,20 +355,23 @@ def is_complete_line(board, y):
 
 	
 def remove_complete_lines(board):
-	lines_removed = []
+	num_lines_removed = 0
 	y = BOARD_HEIGHT - 1 # start from bottom
 	while y >= 0:
 		if is_complete_line(board, y):
-			lines_removed.append(y)
+			lines_removed += 1
 			for pull_down_y in range(y, 0, -1):
 				for x in range(BOARD_WIDTH):
 					board[pull_down_y][x] = board[pull_down_y-1][x]
+					draw_board(board)
+					pygame.display.flip()
+					FPS_CLOCK.tick(LINE_FPS)
 			# clear top line
 			for x in range(BOARD_WIDTH):
 				board[0][x] = None
 		else:
 			y -= 1
-	return lines_removed
+	return num_lines_removed
 
 	
 def is_valid_position(board, piece, adj_x=0, adj_y=0):
