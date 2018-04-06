@@ -4,12 +4,12 @@ import pygame
 import sys
 import random
 import time
-from copy import deepcopy
 
 from base_scene import BaseScene
 from game_over_scene import GameOverScene
 from piece import Piece, SHAPES, COLORS
 from game_resources import IMAGES, SOUNDS
+from clouds import Cloud
 
 BOX_SIZE = 20 # how big each square is
 
@@ -20,8 +20,8 @@ BOARD_SIZE = (10, 20) # rows and columns of game board
 BIG_FONT = pygame.font.Font('freesansbold.ttf', 25)
 NORMAL_FONT = pygame.font.Font('freesansbold.ttf', 15)
 
-BG_COLOR = (120, 120, 120)
-BOARD_COLOR = (0, 0, 0)
+BG_COLOR = (0, 0, 0)
+BOARD_COLOR = (50, 50, 200)
 BORDER_COLOR = (255, 255, 255)
 TEXT_COLOR = (255, 255, 255)
 
@@ -60,7 +60,10 @@ class GameScene(BaseScene):
 
 		self.next_piece = self.new_piece()
 		self.falling_piece = self.new_piece()
-
+		
+		# visual please
+		self.clouds = self.get_new_clouds()
+		
 		# buttons are the same space from the game board as the game board...
 		# ... is from the edge of the screen
 		button_x = (X_MARGIN * 2) + (BOX_SIZE * self.board_width)
@@ -72,6 +75,19 @@ class GameScene(BaseScene):
 		self.helping = False
 
 
+	def get_new_clouds(self):
+		group = pygame.sprite.Group()
+		for y in range(self.to_pixel_coords(0,0)[1], self.to_pixel_coords(0,self.board_height)[1], BOX_SIZE):
+			if random.randint(0, 3) == 0:
+				# pick random pixel x on board
+				min_x = self.to_pixel_coords(0,0)[0]
+				max_x = self.to_pixel_coords(self.board_width,0)[0]
+				x = random.randint(min_x, max_x)
+				c = Cloud((x, y), min_x, max_x)
+				group.add(c)
+		return group
+		
+		
 	def to_pixel_coords(self, box_x, box_y):
 		x = X_MARGIN + (box_x * BOX_SIZE)
 		y = Y_MARGIN + (box_y * BOX_SIZE)
@@ -91,7 +107,10 @@ class GameScene(BaseScene):
 		# take shape input
 		shape = Piece.to_array(random.choice(list(SHAPES.values())))
 		color = random.choice(COLORS)
-		return Piece(self, int(self.board_width / 2), -2, shape, color, BOX_SIZE)
+		p = Piece(self, int(self.board_width / 2), -2, shape, color, BOX_SIZE)
+		for i in range(random.randint(0,3)):
+			p.rotate()
+		return p
 
 
 	def process_inputs(self, events, pressed_keys):
@@ -115,10 +134,12 @@ class GameScene(BaseScene):
 				
 				if k == pygame.K_UP:
 					# rotate
-					rotated = deepcopy(self.falling_piece)
+					fp = self.falling_piece
+					rotated = Piece(fp.parent, fp.x, fp.y, fp.shape, fp.color, fp.box_size) # make a copy of falling piece
 					rotated.rotate()
 					if self.is_valid_position(rotated):
 						self.falling_piece = rotated
+						#SOUNDS['rotate'].play() # doesn't feel right
 				elif k == pygame.K_DOWN:
 					# move downwards faster
 					self.moving_down = True
@@ -214,12 +235,15 @@ class GameScene(BaseScene):
 				if self.board[0][x] is not None:
 					self.switch_to_scene(GameOverScene(self.score, self.level, GameScene( (self.board_width, self.board_height) )))
 					return
+					
+		# move the clouds
+		self.clouds.update()
 
 
 	def display(self, screen):
 		# don't draw crucial game info if help or pause is shown
-		self.draw_background(screen)
 		self.draw_board(screen)
+		self.draw_space(screen)
 		self.draw_next_piece(screen)
 		self.draw_buttons(screen)
 		if self.falling_piece is not None and not (self.paused or self.helping): # there might not be a current falling piece
@@ -248,8 +272,13 @@ class GameScene(BaseScene):
 		screen.blit(surf, surf_rect)
 
 
-	def draw_background(self, screen):
-		screen.fill(BG_COLOR)
+	def draw_space(self, screen):
+		screen_rect = screen.get_rect()
+		screen.fill(BG_COLOR, (0, 0, screen_rect.width, Y_MARGIN-2))
+		screen.fill(BG_COLOR, (0, self.to_pixel_coords(0,self.board_height)[1]+2, screen_rect.width, 100))
+		screen.fill(BG_COLOR, (0, Y_MARGIN-2, X_MARGIN-2, screen_rect.height))
+		x = self.to_pixel_coords(self.board_width,0)[0]+2
+		screen.fill(BG_COLOR, ( x, Y_MARGIN-2, 100, screen_rect.height))
 		screen.blit(IMAGES['title'], (0,0))
 
 
@@ -272,6 +301,7 @@ class GameScene(BaseScene):
 		pygame.draw.rect(screen, BORDER_COLOR, (X_MARGIN, Y_MARGIN, self.board_width*BOX_SIZE, self.board_height*BOX_SIZE), 5)
 		# draw background
 		pygame.draw.rect(screen, BOARD_COLOR, (X_MARGIN, Y_MARGIN, self.board_width*BOX_SIZE, self.board_height*BOX_SIZE))
+		self.clouds.draw(screen)
 		if self.paused or self.helping:
 			return
 		for x in range(self.board_width):

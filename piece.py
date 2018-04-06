@@ -2,7 +2,7 @@
 
 import random
 
-COLORS = ['red', 'blue', 'white', 'black', 'green']
+COLORS = ['red', 'blue', 'white', 'black', 'green', 'orange']
 
 # o = block, / = next row, _ = blank
 SHAPES = {

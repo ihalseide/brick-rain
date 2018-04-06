@@ -2,7 +2,7 @@
 
 import pygame
 
-IMAGES = ['title', 'red brick', 'blue brick', 'green brick', 'white brick', 'black brick']
+IMAGES = ['title', 'cloud', 'red brick', 'blue brick', 'green brick', 'white brick', 'black brick', 'orange brick']
 IMAGES = {x: pygame.image.load('assets/%s.png'%x) for x in IMAGES}
 
 SOUNDS = ['over', 'rotate', 'select', 'break']
