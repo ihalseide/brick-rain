@@ -40,7 +40,11 @@ class GameScene(BaseScene):
 	def __init__(self, board_size=BOARD_SIZE):
 		super().__init__()
 
-		pygame.mixer.music.load('assets/song.ogg')
+		# choose random song
+		if False: #random.randint(0,1): I like song2 better
+			pygame.mixer.music.load('assets/song.ogg')
+		else:
+			pygame.mixer.music.load('assets/song 2.ogg')
 		pygame.mixer.music.play(-1)
 
 		# this array is for the blocks on the board
@@ -62,7 +66,9 @@ class GameScene(BaseScene):
 		self.falling_piece = self.new_piece()
 		
 		# visual please
-		self.clouds = self.get_new_clouds()
+		self.clouds = pygame.sprite.Group()
+		self.last_cloud_time = time.time()
+		self.cloud_wait = 0
 		
 		# buttons are the same space from the game board as the game board...
 		# ... is from the edge of the screen
@@ -75,17 +81,10 @@ class GameScene(BaseScene):
 		self.helping = False
 
 
-	def get_new_clouds(self):
-		group = pygame.sprite.Group()
-		for y in range(self.to_pixel_coords(0,0)[1], self.to_pixel_coords(0,self.board_height)[1], BOX_SIZE):
-			if random.randint(0, 3) == 0:
-				# pick random pixel x on board
-				min_x = self.to_pixel_coords(0,0)[0]
-				max_x = self.to_pixel_coords(self.board_width,0)[0]
-				x = random.randint(min_x, max_x)
-				c = Cloud((x, y), min_x, max_x)
-				group.add(c)
-		return group
+	def get_new_cloud(self):
+		# pick random pixel x on board
+		y = random.randint(self.to_pixel_coords(0,0)[1], self.to_pixel_coords(0,self.board_height)[1])
+		return Cloud((0, y), 0, pygame.display.get_surface().get_rect().width)
 		
 		
 	def to_pixel_coords(self, box_x, box_y):
@@ -179,6 +178,13 @@ class GameScene(BaseScene):
 					self.moving_down = False
 
 
+	def generate_clouds(self):
+		if time.time() - self.last_cloud_time >= self.cloud_wait:
+			self.clouds.add(self.get_new_cloud())
+			self.last_cloud_time = time.time()
+			self.cloud_wait = random.uniform(.5, 3)
+			
+			
 	def update(self):
 		#don't update if paused
 		if self.paused or self.helping:
@@ -236,12 +242,14 @@ class GameScene(BaseScene):
 					self.switch_to_scene(GameOverScene(self.score, self.level, GameScene( (self.board_width, self.board_height) )))
 					return
 					
-		# move the clouds
+		# clouds
+		self.generate_clouds()
 		self.clouds.update()
 
 
 	def display(self, screen):
 		# don't draw crucial game info if help or pause is shown
+		screen.fill((0,0,0))
 		self.draw_board(screen)
 		self.draw_space(screen)
 		self.draw_next_piece(screen)
@@ -278,7 +286,7 @@ class GameScene(BaseScene):
 		screen.fill(BG_COLOR, (0, self.to_pixel_coords(0,self.board_height)[1]+2, screen_rect.width, 100))
 		screen.fill(BG_COLOR, (0, Y_MARGIN-2, X_MARGIN-2, screen_rect.height))
 		x = self.to_pixel_coords(self.board_width,0)[0]+2
-		screen.fill(BG_COLOR, ( x, Y_MARGIN-2, 100, screen_rect.height))
+		screen.fill(BG_COLOR, ( x, Y_MARGIN-2, 140, screen_rect.height))
 		screen.blit(IMAGES['title'], (0,0))
 
 

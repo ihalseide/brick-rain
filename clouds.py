@@ -61,4 +61,4 @@ class Cloud(pygame.sprite.Sprite):
 			self.should_move = not self.should_move # move every other tick
 				
 		if self.rect.left > self.max_x:
-			self.rect.right = self.min_x
+			self.kill()

@@ -81,14 +81,14 @@ class Piece:
 		return self.shape[y][x]
 
 
-	def draw(self, screen, pixel_x=None, pixel_y=None):
+	def draw(self, screen, pixel_x=None, pixel_y=None, draw_blank=False):
 		if pixel_x is None and pixel_y is None:
 			pixel_x, pixel_y = self.parent.to_pixel_coords(self.x, self.y)
 		for x in range(self.width):
 			for y in range(self.height):
 				value = self.get_at(x, y)
-				if value:
-					self.parent.draw_box(screen, None, None, self.color, pixel_x + (self.box_size*x), pixel_y + (self.box_size*y))
+				if value or draw_blank:
+					self.parent.draw_box(screen, None, None, self.color, pixel_x + (self.box_size*x), pixel_y + (self.box_size*y), draw_blank)
 
 
 	# debug:

@@ -5,7 +5,7 @@ import pygame
 pygame.init()
 
 import game_resources
-from game_scene import GameScene
+from opening_scene import OpeningScene
 
 FPS = 30
 SCREEN_WIDTH = 350
@@ -52,4 +52,4 @@ def main(title, width, height, fps, start_scene):
 
 
 if __name__ == "__main__":
-	main("Brick Rain", SCREEN_WIDTH, SCREEN_HEIGHT, FPS, GameScene())
+	main("Brick Rain", SCREEN_WIDTH, SCREEN_HEIGHT, FPS, OpeningScene())
