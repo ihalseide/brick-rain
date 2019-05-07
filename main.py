@@ -4,7 +4,6 @@ import pygame
 
 pygame.init()
 
-import game_resources
 from opening_scene import OpeningScene
 
 FPS = 30

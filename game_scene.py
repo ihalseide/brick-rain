@@ -30,7 +30,7 @@ MOVEMENT_FREQ = .2 # how quickly the player can move the pieces
 
 def calculate_lvl_and_freq(score):
 	level = int(score / 10) + 1
-	fall_freq = .27 - (level * .02)
+	fall_freq = .27 - (level * .02) + .18
 	return level, fall_freq
 
 
