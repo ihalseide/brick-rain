@@ -11,3 +11,5 @@ Note: these are also listed in the game itself
 * Left, Right, & Down Arrow Keys -> Move piece in corresponding direction
 * Space                          -> Drop piece to bottom
 * Escape                         -> Quit
+
+Archived 2020-05-14.
