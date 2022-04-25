@@ -1,5 +1,8 @@
 # It's Raining Bricks
+
 This is a tetromino game that also has a 1x1 piece added to it. The goal is to earn points by filling up rows with blocks. When the screen fills up with too many blocks, the game ends.
+
+![gameplay screenshot](https://github.com/ihalseide/brick-rain/blob/master/screenshot.png)
 
 ### Dependencies
 `Python 3` and `pygame`
