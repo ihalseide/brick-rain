@@ -4,8 +4,20 @@ This is a tetromino game that also has a 1x1 piece added to it. The goal is to e
 
 ![gameplay screenshot](https://github.com/ihalseide/brick-rain/blob/master/screenshot.png)
 
-### Dependencies
-`Python 3` and `pygame`
+### Quick start
+This project requires `Python 3` and `pygame`.
+So get python,
+and install pygame once you have python.
+
+To install pygame with python:
+```console
+python -m pip install pygame
+```
+
+To run the game:
+```console
+python main.py
+```
 
 ### Controls
 Note: these are also listed in the game itself
