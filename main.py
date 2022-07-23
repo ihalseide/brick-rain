@@ -3,6 +3,7 @@
 import pygame
 
 pygame.init()
+pygame.mixer.init()
 
 from opening_scene import OpeningScene
 

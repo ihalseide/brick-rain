@@ -42,9 +42,9 @@ class GameScene(BaseScene):
 
 		# choose random song
 		if False: #random.randint(0,1): I like song2 better
-			pygame.mixer.music.load('assets/song.ogg')
+			pygame.mixer.music.load('assets/song.wav')
 		else:
-			pygame.mixer.music.load('assets/song 2.ogg')
+			pygame.mixer.music.load('assets/song 2.wav')
 		pygame.mixer.music.play(-1)
 
 		# this array is for the blocks on the board

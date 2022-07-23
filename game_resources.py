@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
-
 import pygame
+import os
 
 IMAGES = ['title', 'cloud', 'red brick', 'blue brick', 'green brick', 'white brick', 'black brick', 'orange brick']
-IMAGES = {x: pygame.image.load('assets/%s.png'%x) for x in IMAGES}
-
 SOUNDS = ['over', 'rotate', 'select', 'break']
-SOUNDS = {x: pygame.mixer.Sound('assets/%s.ogg'%x) for x in SOUNDS}
+
+current = os.getcwd()
+IMAGES = {x: pygame.image.load(os.path.join(current, 'assets', f'{x}.png')) for x in IMAGES}
+SOUNDS = {x: pygame.mixer.Sound(os.path.join(current, 'assets', f'{x}.wav')) for x in SOUNDS}
 for s in SOUNDS.values():
 	s.set_volume(.5)
